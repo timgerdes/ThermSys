@@ -5,6 +5,7 @@ a: Berechnung der Nusseltzahl in Abhängigkeit der Reynoldszahl
 import numpy as np
 import matplotlib.pyplot as plt
 
+plt.close("all")
 
 def nusselt_zahl_a(re: float, pr: float, n: float):
     """
@@ -24,7 +25,7 @@ def nusselt_zahl_a(re: float, pr: float, n: float):
     if pr < 0.6 or pr > 160:
         nu = 0
     elif re < 10000:
-        nu = 0
+        nu = 3.66
     else:
         nu = 0.023 * re ** (4 / 5) * pr ** n
 
@@ -50,7 +51,7 @@ def nusselt_zahl_b(re: float, pr: float):
     if pr < 0.5 or pr > 2000:
         nu = 0
     elif re < 3000 or re > 5 * 10 ** 6:
-        nu = 0
+        nu = 3.66
     else:
         f = (0.79 * np.log(re) - 1.64) ** -2
         nu_zaehler = (f / 8) * (re - 1000) * pr
