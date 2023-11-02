@@ -141,6 +141,7 @@ if __name__ == "__main__":
     plt.show()
 
     # Einfluss des Wärmeübergangskoeffizienten
+    plt.figure(3)
     l = 20 * 10 ** -3  # zurückgesetzt
 
     alpha = np.linspace(5, 1000)
@@ -160,6 +161,7 @@ if __name__ == "__main__":
     plt.show()
 
     # Aufgabe 2d - Teilung variieren
+    plt.figure(4)
     alpha = 5  # zurücksetzen
     teilungen = np.linspace(1, 8, 16)
 
