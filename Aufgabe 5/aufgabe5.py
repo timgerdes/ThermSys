@@ -37,7 +37,8 @@ def rohr_dp(m_dot, D, L, eta=eta_Luft, rho=rho_Luft):
 def druck_bilanz(m_dot, D, L):
     dp_rohr = rohr_dp(m_dot, D, L)
 
-    global func
+    global functions
+    func = functions["dpfrommdot"]
     dp_verdichter = func.func(m_dot, *func.get_params())
 
     return dp_rohr + dp_verdichter
@@ -45,48 +46,65 @@ def druck_bilanz(m_dot, D, L):
 
 if __name__ == "__main__":
 
-    print(rohr_dp(0.05, 0.05, 200))
+    # print(rohr_dp(0.05, 0.05, 200))
 
-
+    global functions
     functions = ff.fit_curves()
 
-    plt.figure(1)
-    global func
-    func = functions["dpfrommdot"]
+    P_el_from_dp_func = functions["pelfromdp"]
+
     L = np.linspace(0, 200, 100)
-    for D in np.linspace(5e-2, 50e-2, 20):
+    a_solution = []
+    b_solution = []
+
+    for D in [5e-2, 10e-2, 30e-2, 40e-2, 50e-2]:
         m_dot = []
         m_dot_guess = 1
+        P_el = []
         for L_element in L:
-            #print(f"D={D} und L={L_element}")
+            # print(f"D={D} und L={L_element}")
             m_dot_solve = root(fun=druck_bilanz, x0=m_dot_guess, args=(D, L_element))
 
             if m_dot_solve.success:
                 solution = m_dot_solve.x[0]
                 m_dot.append(solution)
                 m_dot_guess = solution
+
+                dp = -rohr_dp(solution, D, L_element)
+
+                P_el_solution = P_el_from_dp_func.func(dp, *P_el_from_dp_func.get_params())
+                P_el.append(P_el_solution)
             else:
                 m_dot.append(np.inf)
+                P_el.append(np.inf)
                 print(f"Keine Lösung gefunden für D={D} und L={L}")
 
-        plt.plot(L, m_dot, label=f"Durchmesser: {D*1e2} cm")
+        a_solution.append([D, m_dot])
+        b_solution.append([D, P_el])
+    # Aufgabe 1a)
+
+    plt.figure(1)
+    for solution in a_solution:
+        D, m_dot = solution
+        plt.plot(L, m_dot, label=f"Durchmesser: {D * 1e2} cm")
 
     plt.xlabel(r"Länge / [m]")
     plt.ylabel(r"Massenstrom / [kg/s]")
-    #plt.legend()
-    plt.grid()
-    plt.show()
-
-    plt.figure(2)
-    D = [0.05, 0.06, 0.08, 0.1]
-    for D_element in D:
-        m_dot = np.linspace(0.001, 0.1, 20)
-        dp_rohr = rohr_dp(m_dot, D_element, 200)
-        plt.plot(m_dot, dp_rohr / 1e3, label=f"Durchmesser: {D_element*1e2} cm")
-
-    plt.xlabel(r"Massentrom / [kg/s]")
-    plt.ylabel(r"Druckverlust / [kPa]")
+    plt.title("Aufgabe 1a) Erreichbarer Massenstrom")
     plt.legend()
     plt.grid()
     plt.show()
 
+    # Aufgabe 1b)
+    plt.figure(2)
+
+    for solution in b_solution:
+        D, P_el = solution
+        plt.plot(L, P_el, label=f"Durchmesser: {D * 1e2} cm")
+
+    plt.xlabel(r"Länge / [m]")
+    plt.ylabel(r"Elektrische Leistung / [W]")
+    plt.title("Aufgabe 1b) Erforderliche Leistung")
+    plt.legend()
+    plt.grid()
+    plt.show()
